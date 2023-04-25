@@ -1,0 +1,73 @@
+---
+title: "Wine Data - Linear Regression By Aiman Sahay dated 25/04/2023"
+output: html_notebook
+---
+
+
+```{r}
+# Reading the source file
+wine <- read.csv("wine.csv")
+
+str(wine)
+summary(wine)
+
+# Creating a one variable Linear Regression Model
+model1 <- lm(Price~AGST, data=wine)
+summary(model1)
+
+model1$residuals
+
+SSE <- sum(model1$residuals^2)
+SSE
+
+# Adding more independent variables to linear regression
+model2 <- lm(Price ~ AGST+HarvestRain, data=wine)
+summary(model2)
+
+SSE <- sum(model2$residuals^2)
+SSE
+
+# Building a model using all independent variables
+model3 <- lm(Price ~ AGST+HarvestRain+WinterRain+Age+FrancePop, data = wine)
+summary(model3)
+
+SSE <- sum(model3$residuals^2)
+SSE
+
+# Improving the model by removing insignificant variables based on p values
+model4 <- lm(Price ~ AGST+HarvestRain+WinterRain+Age, data=wine)
+summary(model4)
+# Observation: This model is as good as model 3 without including FrancePop variable and the adjusted R squared is also higher.
+
+# Calculating Correlation
+cor(wine$WinterRain, wine$Price)
+
+cor(wine$Age, wine$FrancePop) # Almost -1 correlation coefficient: indicates multicollinearity
+
+cor(wine)
+# Observation: Using the correlation matrix, it seems that except multicollinearity between Age and France Population, there is no problem of multicollinearity between other independent variables.
+
+# Checking the goodness of the model by removing Age and FrancePop from model3 as that model had indicated both these variables to be insignificant.
+model5 <- lm(Price ~ AGST+HarvestRain+WinterRain, data=wine)
+summary(model5)
+
+# Observation: model 4 is better than model 5 as the R squared in model 4 > model 5
+# Conclusion: Out of all models created, model 4 has the highest R squared and looks like the right model for this data.
+
+# Checking for model accuracy using out of sample data
+wineTest <- read.csv("wine_test.csv")
+str(wineTest)
+
+predictTest <- predict(model4, newdata=wineTest)
+predictTest
+
+SSE <- sum((wineTest$Price - predictTest)^2)
+SST <- sum((wineTest$Price - mean(wine$Price))^2)
+rsquared <- 1 - SSE/SST
+rsquared
+
+# Observation: R squared of 0.79 is quite good for the test set data. But since there are only 2 data points in the test data set, we cannot reach any strong conclusions.
+
+```
+
+
